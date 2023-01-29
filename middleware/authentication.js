@@ -19,6 +19,7 @@ const isAuthenticated = (req, res, next) => {
     if (err) {
       return next(err);
     }
+    console.log(user);
     if (!user) {
       res.status(401).send("You're not logged in.");
       return;

@@ -6,7 +6,12 @@ const passport = require("passport");
 const async = require("async");
 
 exports.posts_get = (req, res, next) => {
-  res.send("This is get request to posts.");
+  Post.find((err, posts) => {
+    if (err) {
+      return next(err);
+    }
+    res.json({ success: true, posts });
+  });
 };
 exports.posts_post = [
   body("title")
@@ -24,7 +29,7 @@ exports.posts_post = [
         return next(err);
       }
       if (!user) {
-        return res.send("You must be logged in to create a post");
+        return res.status(401).json("You must be logged in to create a post");
       }
       const errors = validationResult(req);
       const post = new Post({
@@ -33,14 +38,14 @@ exports.posts_post = [
         author: user._id,
       });
       if (!errors.isEmpty()) {
-        res.send(errors.array());
+        res.status(500).json({ errors: errors.array(), success: false, post });
         return;
       }
       post.save((err, result) => {
         if (err) {
           return next(err);
         }
-        res.send(result);
+        res.json({ post, success: true });
       });
     })(req, res, next);
   },
@@ -88,7 +93,7 @@ exports.post_update = [
         return next(err);
       }
       if (!user) {
-        return res.json({ success: false, message: info.message });
+        return res.status(401).json({ success: false, message: info.message });
       }
       Post.findById(req.params.postId)
         .populate("author")

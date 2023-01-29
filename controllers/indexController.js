@@ -11,6 +11,18 @@ exports.index_get = (req, res, next) => {
   res.redirect("/posts");
 };
 
+exports.user_get = (req, res, next) => {
+  passport.authenticate("jwt", { session: false }, (err, user) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.status(404).json({ success: false, user });
+    }
+    return res.json({ success: true, user });
+  })(req, res, next);
+};
+
 exports.login_post = (req, res, next) => {
   passport.authenticate("local", { session: false }, (err, user, info) => {
     if (err) {
@@ -20,12 +32,9 @@ exports.login_post = (req, res, next) => {
       res.status(400).json({
         message: info.message,
         user,
+        success: false,
       });
       return;
-    }
-    console.log(req.user);
-    if (req.user) {
-      return res.json({ success: false, message: "You're already logged in." });
     }
 
     req.login(user, { session: false }, (err) => {
@@ -37,7 +46,7 @@ exports.login_post = (req, res, next) => {
         { user: body },
         process.env.JWT_SECRET || "Walid zin khanz rjlin"
       );
-      return res.json({ token });
+      return res.json({ token, success: true });
     });
   })(req, res, next);
 };
@@ -65,6 +74,12 @@ exports.signup_post = [
     .withMessage("password is required")
     .isLength({ min: 8 })
     .withMessage("Password must contain at least 8 characters"),
+  body("password_confirmation").custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error("Passwords don't match.");
+    }
+    return true;
+  }),
   (req, res, next) => {
     const errors = validationResult(req);
     const user = new User({
@@ -75,19 +90,24 @@ exports.signup_post = [
     });
 
     if (!errors.isEmpty()) {
-      res.json({ success: false, errors: errors.array() });
+      res.status(500).json({ success: false, errors: errors.array(), user });
       return;
     }
     user.save((err) => {
       if (err) {
         return next(err);
       }
-      res.json({ success: true, message: "Signed up successfully" });
+      res.json({
+        success: true,
+        message: "Signed up successfully",
+        user,
+        errors: [],
+      });
     });
   },
 ];
 
 exports.logout = (req, res, next) => {
   req.logout();
-  res.send("logged out");
+  res.json({ success: true, message: "Logged out" });
 };

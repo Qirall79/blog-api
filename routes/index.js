@@ -11,6 +11,7 @@ router.get("/", indexController.index_get);
 
 router.post("/login", isNotAuthenticated, indexController.login_post);
 router.post("/logout", isAuthenticated, indexController.logout);
+router.get("/user", indexController.user_get);
 
 router.post("/signup", indexController.signup_post);
 

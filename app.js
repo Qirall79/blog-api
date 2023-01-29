@@ -3,6 +3,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const cors = require("cors");
 const session = require("express-session");
 
 var indexRouter = require("./routes/index");
@@ -25,8 +26,12 @@ async function main() {
   await mongoose.connect(mongoDb);
 }
 
+// cors setup
+app.use(cors());
+
 // passport js
 require("./config/passport");
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
