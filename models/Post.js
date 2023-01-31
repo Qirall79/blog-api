@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const { DateTime } = require("luxon");
 const Post = new Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
@@ -9,6 +10,10 @@ const Post = new Schema({
     ref: "User",
     required: true,
   },
+});
+
+Post.virtual("timestamp_formatted").get(function () {
+  return DateTime.fromJSDate(this.timestamp).toISODate();
 });
 
 module.exports = mongoose.model("Post", Post);

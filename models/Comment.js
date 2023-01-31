@@ -7,4 +7,8 @@ const Comment = new Schema({
   timestamp: { type: Date, required: true, default: new Date() },
 });
 
+Comment.virtual("timestamp_formatted").get(function () {
+  return DateTime.fromJSDate(this.timestamp).toISODate();
+});
+
 module.exports = mongoose.model("Comment", Comment);

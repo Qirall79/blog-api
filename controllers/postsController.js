@@ -21,8 +21,7 @@ exports.posts_post = [
     .escape(),
   body("content")
     .isLength({ min: 100 })
-    .withMessage("Post's content must be at least 100 characters long.")
-    .escape(),
+    .withMessage("Post's content must be at least 100 characters long."),
   (req, res, next) => {
     passport.authenticate("jwt", { session: false }, (err, user) => {
       if (err) {
@@ -85,16 +84,19 @@ exports.post_update = [
     .escape(),
   body("content")
     .isLength({ min: 100 })
-    .withMessage("Post's content must be at least 100 characters long.")
-    .escape(),
+    .withMessage("Post's content must be at least 100 characters long."),
   (req, res, next) => {
     passport.authenticate("jwt", { session: false }, (err, user, info) => {
       if (err) {
         return next(err);
       }
       if (!user) {
-        return res.status(401).json({ success: false, message: info.message });
+        return res.status(401).json({
+          success: false,
+          message: "You must login to update a post.",
+        });
       }
+
       Post.findById(req.params.postId)
         .populate("author")
         .exec((err, post) => {
@@ -104,13 +106,13 @@ exports.post_update = [
           if (!post) {
             return res
               .status(404)
-              .json({ success: false, message: "Post not found" });
+              .json({ success: false, message: "Post not found", errors: [] });
           }
           if (user._id.toString() !== post.author._id.toString()) {
-            console.log(post.author._id);
             return res.status(401).json({
               success: false,
               message: "You can't edit a post that's not yours.",
+              errors: [],
             });
           }
           const updatedPost = new Post({
@@ -119,11 +121,24 @@ exports.post_update = [
             author: user._id,
             _id: post._id,
           });
+          const errors = validationResult(req);
+          if (!errors.isEmpty()) {
+            return res.status(500).json({
+              success: false,
+              errors: errors.array(),
+              post: updatedPost,
+            });
+          }
           Post.findByIdAndUpdate(post._id, updatedPost, {}, (err) => {
             if (err) {
               return next(err);
             }
-            res.json(updatedPost);
+
+            return res.json({
+              success: true,
+              errors: [],
+              post: updatedPost,
+            });
           });
         });
     })(req, res, next);
