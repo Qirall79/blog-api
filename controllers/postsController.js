@@ -6,12 +6,14 @@ const passport = require("passport");
 const async = require("async");
 
 exports.posts_get = (req, res, next) => {
-  Post.find((err, posts) => {
-    if (err) {
-      return next(err);
-    }
-    res.json({ success: true, posts });
-  });
+  Post.find()
+    .sort({ timestamp: -1 })
+    .exec((err, posts) => {
+      if (err) {
+        return next(err);
+      }
+      res.json({ success: true, posts });
+    });
 };
 exports.posts_post = [
   body("title")
