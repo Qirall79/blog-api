@@ -4,7 +4,7 @@ const Comment = require("../models/Comment");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 require("dotenv").config();
 
@@ -80,8 +80,8 @@ exports.signup_post = [
   }),
   (req, res, next) => {
     const errors = validationResult(req);
-    const salt = bcrypt.genSalt();
-    const hashedPassword = bcrypt.hash(req.body.password, salt);
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(req.body.password, salt);
     const user = new User({
       first_name: req.body.first_name,
       last_name: req.body.last_name,

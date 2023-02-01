@@ -4,7 +4,7 @@ const passportJWT = require("passport-jwt");
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJwt = passportJWT.ExtractJwt;
 const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // dotenv
 require("dotenv").config();
@@ -14,7 +14,7 @@ passport.use(
   new LocalStrategy(
     { usernameField: "email", passwordField: "password" },
     (email, password, done) => {
-      User.findOne({ email }).exec((err, user) => {
+      User.findOne({ email }).exec(async (err, user) => {
         if (err) {
           return done(err);
         }
@@ -23,7 +23,7 @@ passport.use(
             message: "Incorrect Email.",
           });
         }
-        const isMatch = bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
           return done(null, false, {
             message: "Incorrect Password.",
