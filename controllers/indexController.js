@@ -4,6 +4,7 @@ const Comment = require("../models/Comment");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
+const bcrypt = require("bcrypt");
 
 require("dotenv").config();
 
@@ -42,10 +43,7 @@ exports.login_post = (req, res, next) => {
         return next(err);
       }
       const body = { id: user._id, email: user.email };
-      const token = jwt.sign(
-        { user: body },
-        process.env.JWT_SECRET || "Walid zin khanz rjlin"
-      );
+      const token = jwt.sign({ user: body }, process.env.JWT_SECRET);
       return res.json({ token, success: true });
     });
   })(req, res, next);
@@ -82,11 +80,13 @@ exports.signup_post = [
   }),
   (req, res, next) => {
     const errors = validationResult(req);
+    const salt = bcrypt.genSalt();
+    const hashedPassword = bcrypt.hash(req.body.password, salt);
     const user = new User({
       first_name: req.body.first_name,
       last_name: req.body.last_name,
       email: req.body.email,
-      password: req.body.password,
+      password: hashedPassword,
     });
 
     if (!errors.isEmpty()) {

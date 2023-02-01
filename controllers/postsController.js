@@ -12,7 +12,7 @@ exports.posts_get = (req, res, next) => {
       if (err) {
         return next(err);
       }
-      res.json({ success: true, posts });
+      res.status(200).json({ success: true, posts });
     });
 };
 exports.posts_post = [
