@@ -43,7 +43,7 @@ exports.login_post = (req, res, next) => {
         return next(err);
       }
       const body = { id: user._id, email: user.email };
-      const token = jwt.sign({ user: body }, process.env.JWT_SECRET);
+      const token = jwt.sign({ user: body }, process.env.JWT_SECRET || "just some secret");
       return res.json({ token, success: true });
     });
   })(req, res, next);

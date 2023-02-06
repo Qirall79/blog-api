@@ -40,7 +40,7 @@ passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET || "Walid zin khanz rjlin",
+      secretOrKey: process.env.JWT_SECRET || "just some secret",
     },
     (token, done) => {
       User.findById(token.user.id).exec((err, user) => {
